@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:fasum/screens/sign_in_screen.dart';
+import 'package:fasumnay/screens/sign_in_screen.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
   Future<void> signOut(BuildContext context) async {
