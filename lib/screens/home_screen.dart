@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fasumnay/screens/sign_in_screen.dart';
+
+import 'add_post_screen.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
   Future<void> signOut(BuildContext context) async {
@@ -25,6 +27,15 @@ class HomeScreen extends StatelessWidget {
       ),
       body: const Center(
         child: Text('You have logged In'),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddPostScreen()),
+          );
+        },
+        child: Icon(Icons.add),
       ),
     );
   }
