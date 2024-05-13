@@ -32,25 +32,48 @@ class SignUpScreenState extends State<SignUpScreen> {
               controller: _passwordController,
               decoration: const InputDecoration(
                 labelText: 'Password',
-                border: OutlineInputBorder(),),
+                border: OutlineInputBorder(),
+              ),
               obscureText: true,
             ),
             const SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: () async {
+                final email = _emailController.text.trim();
+                final password = _passwordController.text.trim();
+                if (email.isEmpty || password.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please fill in all fields.')),
+                  );
+                  return;
+                }
                 try {
-                  await
-                  FirebaseAuth.instance.createUserWithEmailAndPassword(
-                    // <-- Gunakan FirebaseAuth.instance
-                    email: _emailController.text,
-                    password: _passwordController.text,
+                  await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                    email: email,
+                    password: password,
                   );
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (context) => const
                     HomeScreen()),
                   );
-                } catch (error) {
-                  print(error.toString());
+                } on FirebaseAuthException catch (e) {
+                  if (e.code == 'weak-password') {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('The password provided is too weak.')),
+                    );
+                  } else if (e.code == 'email-already-in-use') {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('The account already exists for that email.')),
+                    );
+                  } else if (e.code == 'invalid-email') {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('The email address is not valid.')),
+                    );
+                  }
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('An error occurred: $e')),
+                  );
                 }
               },
               child: const Text('Sign Up'),
