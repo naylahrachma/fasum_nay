@@ -1,66 +1,103 @@
 import 'package:flutter/material.dart';
-import 'package:fasumnay/screens/add_post_screen.dart';
-import 'package:fasumnay/screens/sign_in_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
+import 'package:fasumnay/screens/sign_in_screen.dart';
+import 'add_post_screen.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
-  Future<void> _signOut(BuildContext context) async {
-    try {
-      await FirebaseAuth.instance.signOut();
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const SignInScreen()),
-      );
-    } catch (e) {
-      print('Error signing out: $e');
-    }
+  Future<void> signOut(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => SignInScreen()));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Home'),
+        title: const Text('Beranda'),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          IconButton(
+            onPressed: () {
+              signOut(context);
+            },
+            icon: const Icon(Icons.logout),
+          ),
+        ],
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection('posts').orderBy('timestamp', descending: true).snapshots(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-
-          final posts = snapshot.data!.docs;
-
-          return ListView.builder(
-            itemCount: posts.length,
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text('Tidak ada postingan tersedia'));
+          }
+          return GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3, // Jumlah kolom
+              childAspectRatio: 1, // Rasio aspek untuk membuat gambar kotak
+            ),
+            itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
-              final post = posts[index];
-              final postData = post.data() as Map<String, dynamic>;
-              final imageUrl = postData['image_url'] ?? '';
-              final postText = postData['text'] ?? '';
-              final timestamp = postData['timestamp'] as Timestamp;
-              final formattedTime = DateFormat.yMMMd().add_jm().format(timestamp.toDate());
+              var post = snapshot.data!.docs[index];
+              var data = post.data() as Map<String, dynamic>;
+              var postTime = data['timestamp'] as Timestamp;
+              var date = postTime.toDate();
+              var formattedDate = '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute}';
+
+              var username = data.containsKey('username') ? data['username'] : 'Anonim';
+              var imageUrl = data.containsKey('image_url') ? data['image_url'] : null;
+              var text = data.containsKey('text') ? data['text'] : '';
 
               return Card(
-                margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      imageUrl.isNotEmpty
-                          ? Image.network(imageUrl)
-                          : const Icon(Icons.image_not_supported),
-                      const SizedBox(height: 8.0),
-                      Text('Posted by User', style: TextStyle(fontWeight: FontWeight.bold)),
-                      Text(formattedTime, style: TextStyle(color: Colors.grey)),
-                      const SizedBox(height: 8.0),
-                      Text(postText),
-                    ],
-                  ),
+                margin: EdgeInsets.all(4.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (imageUrl != null)
+                      Expanded(
+                        child: Image.network(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                        ),
+                      ),
+                    Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            username,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            formattedDate,
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 10,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            text,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               );
             },
@@ -74,26 +111,7 @@ class HomeScreen extends StatelessWidget {
             MaterialPageRoute(builder: (context) => AddPostScreen()),
           );
         },
-        child: const Icon(Icons.add),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-              child: Text('Fasum Nay'),
-            ),
-            ListTile(
-              title: const Text('Sign Out'),
-              onTap: () {
-                _signOut(context);
-              },
-            ),
-          ],
-        ),
+        child: Icon(Icons.add),
       ),
     );
   }

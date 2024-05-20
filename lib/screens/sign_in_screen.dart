@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fasumnay/screens/home_screen.dart';
 import 'package:fasumnay/screens/sign_up_screen.dart';
+
 class SignInScreen extends StatefulWidget {
-  const SignInScreen({super.key});
+  const SignInScreen({Key? key}) : super(key: key);
+
   @override
-  SignInScreenState createState() => SignInScreenState();
+  _SignInScreenState createState() => _SignInScreenState();
 }
-class SignInScreenState extends State<SignInScreen> {
+
+class _SignInScreenState extends State<SignInScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   String _errorMessage = '';
@@ -45,47 +48,49 @@ class SignInScreenState extends State<SignInScreen> {
                 onPressed: () async {
                   final email = _emailController.text.trim();
                   final password = _passwordController.text;
+
                   // Validasi email
                   if (email.isEmpty || !isValidEmail(email)) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                          content: Text('Please enter a valid email')),
+                        content: Text('Please enter a valid email'),
+                      ),
                     );
                     return;
                   }
+
                   // Validasi password
                   if (password.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                          content: Text('Please enter your password')),
+                        content: Text('Please enter your password'),
+                      ),
                     );
                     return;
                   }
+
                   try {
                     // Lakukan sign in dengan email dan password
                     await FirebaseAuth.instance.signInWithEmailAndPassword(
                       email: email,
                       password: password,
                     );
+
                     // Jika berhasil sign in, navigasi ke halaman beranda
                     Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (context) =>
-                      const
-                      HomeScreen()),
+                      MaterialPageRoute(builder: (context) => const HomeScreen()),
                     );
                   } on FirebaseAuthException catch (error) {
                     print('Error code: ${error.code}');
                     if (error.code == 'user-not-found') {
                       // Jika email tidak terdaftar, tampilkan pesan kesalahan
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text(
-                            'No user found with that email')),
+                        const SnackBar(content: Text('No user found with that email')),
                       );
                     } else if (error.code == 'wrong-password') {
                       // Jika password salah, tampilkan pesan kesalahan
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text(
-                            'Wrong password. Please try again.')),
+                        const SnackBar(content: Text('Wrong password. Please try again.')),
                       );
                     } else {
                       // Jika terjadi kesalahan lain, tampilkan pesan kesalahan umum
@@ -117,9 +122,7 @@ class SignInScreenState extends State<SignInScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) =>
-                    const
-                    SignUpScreen()),
+                    MaterialPageRoute(builder: (context) => const SignUpScreen()),
                   );
                 },
                 child: const Text('Don\'t have an account? Sign up'),
