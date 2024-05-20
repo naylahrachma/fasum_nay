@@ -50,7 +50,7 @@ class HomeScreen extends StatelessWidget {
               var date = postTime.toDate();
               var formattedDate = '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute}';
 
-              var username = data.containsKey('username') ? data['username'] : 'Anonim';
+              var username = data.containsKey('username') ? data['username'] : 'Naylah Rachma Sari';
               var imageUrl = data.containsKey('image_url') ? data['image_url'] : null;
               var text = data.containsKey('text') ? data['text'] : '';
 
