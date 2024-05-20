@@ -84,7 +84,7 @@ class HomeScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.blue,
               ),
-              child: Text('FASUM RUSTAM'),
+              child: Text('Fasum Nay'),
             ),
             ListTile(
               title: const Text('Sign Out'),
